@@ -41,6 +41,9 @@ class Command(NoArgsCommand):
         optparse.make_option("-m", "--media",
                              action="store_true", dest="syncmedia", default=False,
                              help="Sync media files located at settings.MEDIA_ROOT path."),
+        optparse.make_option("-k", "--keep",
+                             action="store_true", dest="keep_old", default=False,
+                             help="Do not delete old files on container."),
     )
 
     def set_options(self, options):
@@ -55,6 +58,7 @@ class Command(NoArgsCommand):
         self.verbosity = int(options.get("verbosity"))
         self.syncmedia = options.get("syncmedia")
         self.syncstatic = options.get("syncstatic")
+        self.keep_old = options.get("keep_old")
         if self.test_run:
             self.verbosity = 2
         cli_includes = options.get("includes")
@@ -136,7 +140,8 @@ class Command(NoArgsCommand):
 
         # sync
         self.upload_files(abspaths, relpaths, remote_objects)
-        self.delete_extra_files(relpaths, cloud_objs)
+        if not self.keep_old:
+            self.delete_extra_files(relpaths, cloud_objs)
 
         if not self.quiet or self.verbosity > 1:
             self.print_tally()
